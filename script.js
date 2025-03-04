@@ -1,46 +1,47 @@
 const form = document.querySelector('form');
-// document.forms //It returns HTMLCollection that is not an actual array but we need actual array, so for making actual array we use Array.from() function
-const leaderBoardDiv = document.querySelector('#leaderBoard');
+
 let leaderBoard = [];
-const elements = Array.from(document.forms[0].elements); // used for taking all elements of form
-elements.pop();
 
-elements.forEach((e)=>{
-  e.classList.add('inpt');
+const leaderBoardDiv = document.querySelector('#leaderBoard');
+
+const elements = Array.from(document.forms[0].elements); // for accessing all child of first form present in page
+let btn = elements.pop();
+elements.forEach((n)=>{
+  n.classList.add('inpt')
 })
-
-
+ 
 form.addEventListener('submit', (e)=>{
   e.preventDefault();
-  const data = {
-    id: leaderBoard.length,
+
+  const obj = {
+    position: leaderBoard.length,
     fname: elements[0].value,
     lname: elements[1].value,
     country: elements[2].value,
     score: elements[3].value
-  };
-  
+  }
+
 
   // adding data into leaderBoard
-  leaderBoard.push(data);
+  leaderBoard.push(obj);
   console.log(leaderBoard);
 
   // clearing the form
   clearForm();
 
-  // sorting the leaderBoard
+  // // sorting the leaderBoard
   sortLeaderBoard();
 
-  // print values on the DOM
+  // // print values on the DOM
   printLeaderBoard();
-
 });
 
 function clearForm() {
-  elements.forEach((elem)=>{
-    elem.value = "";
-  });
+  elements[0].value = "";
   elements[0].focus();
+  elements[1].value ="";
+  elements[2].value ="";
+  elements[3].value ="";
 }
 
 function sortLeaderBoard() {
@@ -49,84 +50,87 @@ function sortLeaderBoard() {
   });
 }
 
-function printLeaderBoard(){
+function printLeaderBoard() {
   leaderBoardDiv.innerHTML = "";
-  const fragment = document.createDocumentFragment();
+  const fragmrnt = document.createDocumentFragment();
   leaderBoard.forEach((obj)=>{
     const parent = document.createElement('div');
+    parent.classList.add('parent');
     const name = document.createElement('p');
-    name.style.width = "25%";
+    const fullName = document.createElement('span');
+    const date = document.createElement('span');
+
     const country = document.createElement('p');
-    country.style.width = "25%";
     const score = document.createElement('p');
-    score.style.width = "15%";
-    const actions = document.createElement('p');
+
+    name.classList.add('fullName');
+    date.classList.add('dateSpan');
+    country.classList.add('pTag');
+    score.classList.add('pTag');
+  
+    const boxSetting = document.createElement('p');
     const del = document.createElement('span');
-    const plus5 = document.createElement('span');
-    plus5.classList.add('plus');
     const minus5 = document.createElement('span');
+    const plus5 = document.createElement('span');
+
+    boxSetting.classList.add('actions', 'actions2');
+    del.classList.add('del');
+    plus5.classList.add('plus');
     minus5.classList.add('minus');
 
-    parent.classList.add('parent');
-    actions.classList.add('actions');
 
-    name.innerText = `${obj.fname} ${obj.lname}`; //OR obj.fname +" "+ obj.lname
+    del.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    minus5.innerText = '-5';
+    plus5.innerText = '+5';
+
+    boxSetting.append(del, minus5, plus5);
+
+    fullName.innerText = `${obj.fname} ${obj.lname}`;
+    date.innerText = new Date().toDateString();
+    
+    name.append(fullName, date);
+
     country.innerText = `${obj.country}`;
     score.innerText = `${obj.score}`;
 
-    del.classList.add("fa-solid", "fa-trash", "del");
-    
+    del.addEventListener('click', () => deleteData(obj.position));
 
-    //by me
-    del.addEventListener('click', (e)=>{
-      leaderBoard.splice(e.id , 1);
-      e.target.parentElement.parentElement.remove();
-    })
+    minus5.addEventListener('click', ()=> modifyScore(obj.position, "-"));
+    plus5.addEventListener('click', ()=> modifyScore(obj.position, "+"));
 
-    del.addEventListener('click', ()=>deleteData(obj.id));
+    parent.append(name, country, score, boxSetting);
 
-    plus5.innerText ="+5";
-    minus5.innerText = "-5";
-
-    plus5.addEventListener('click', ()=>modifyScore(obj.id, "+"));
-    minus5.addEventListener('click', ()=>modifyScore(obj.id, "-"));
-    actions.append(del, plus5, minus5);
-
-    parent.append(name, country, score, actions);
-    fragment.append(parent);
-  }); 
-  leaderBoardDiv.append(fragment);
+    fragmrnt.append(parent);
+  });
+  leaderBoardDiv.append(fragmrnt);
 }
 
-// function deleteData(idToDelete){
-//   leaderBoard = leaderBoard.filter((existingData)=>{
-//     return existingData.id !== idToDelete;
-//   });
+function deleteData(idxToDelete) {
+  leaderBoard = leaderBoard.filter((existingData)=>{
+    return existingData.position !== idxToDelete;
+  });
 
-//   // sorting the leaderBoard
-//   sortLeaderBoard();
+  printLeaderBoard();
+}
 
-//   // print values on the DOM
-//   printLeaderBoard();
-// } 
-
-function modifyScore(idToModify, sign){
-  
-  // Method 2 (By me)
+function modifyScore(idToModify, sign) {
   leaderBoard.forEach((existingData)=>{
-    if(existingData.id === idToModify){
+    if(existingData.position === idToModify){
       if(sign === "+"){
-        existingData.score = Number(existingData.score) + 5;
+        if(existingData.score <300){
+          existingData.score = Number(existingData.score) + 5;
+        }
+        
       }
       else{
-        existingData.score = Number(existingData.score) - 5;
+        if(existingData.score > 4){
+          existingData.score = Number(existingData.score) - 5;
+        }
       }
     }
   });
 
-  // sorting the leaderBoard
   sortLeaderBoard();
 
-  // print values on the DOM
   printLeaderBoard();
 }
